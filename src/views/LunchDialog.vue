@@ -16,34 +16,29 @@
         <el-row>
           <el-col :span="8">
             <el-form-item label="餐廳名稱" prop="name">
-              <el-input v-model="form.name" :disabled="controller.isEdit" />
+              <el-input v-model="form.name" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="8">
-            <el-form-item label="評分" prop="parent">
-              <el-input
-                v-model="form.parent"
-                clearable
-                :disabled="parentController == 1 ? true : false"
+            <el-form-item label="評分" prop="rate">
+              <el-rate
+                v-model="form.rate"
+                :texts="['oops', 'disappointed', 'normal', 'good', 'great']"
+                show-text
               />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="8">
-            <el-form-item prop="type">
-              <el-select
-                v-model="form.parentSelect"
-                placeholder="選擇母路徑"
-                :disabled="parentController == 2 ? true : false"
-                clearable
-              >
+            <el-form-item label="類型" prop="type">
+              <el-select v-model="form.type" placeholder="選擇類型" clearable>
                 <el-option
-                  v-for="(item, index) in props.parentSelectors"
+                  v-for="(item, index) in typeSelector"
                   :key="index"
-                  :label="item.title"
+                  :label="item.name"
                   :value="item.name"
                 />
               </el-select>
@@ -53,23 +48,20 @@
         <el-row style="margin-top: 20px">
           <el-col :span="8">
             <el-form-item label="備註" prop="memo">
-              <el-input v-model="form.title" />
+              <el-input v-model="form.memo" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="8">
-            <el-form-item label="Menu類型" prop="type">
-              <el-select v-model="form.type" placeholder="選擇類型">
-                <el-option label="母路徑" value="menu" />
-                <el-option label="子路徑" value="subMenu" />
+            <el-form-item label="名單所有人" prop="owner">
+              <el-select v-model="form.owner" placeholder="選擇名單所有人">
+                <el-option label="JieJie" value="JieJie" />
+                <el-option label="強尼" value="johnny" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item :label="enableTitle" prop="enable">
-          <el-switch v-model="form.enable" />
-        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -85,50 +77,35 @@
 import { reactive, computed, ref, watchEffect, watch } from "vue";
 
 const props = defineProps({
-  parentSelectors: Array,
-  menuData: Object,
+  lunchData: Object,
   controller: Object,
 });
-const menuData = reactive(props.menuData);
+
+const typeSelector = [{ name: "早餐" }, { name: "麵" }];
+
+// do not use same name with ref
+const form = reactive({
+  name: "",
+  rate: 0,
+  type: "",
+  memo: "",
+  owner: "",
+});
 
 watchEffect(() => {
   // 只能監聽到屬性，不能監聽物件的變化
+  console.log(form.rate);
 });
 
 // 可以監聽整個物件 當發生變化會callback
-watch(props.menuData, (newVal) => {
-  Object.assign(form, newVal);
-});
+// watch(props.menuData, (newVal) => {
+//   Object.assign(form, newVal);
+// });
 
 // 表單驗證
 const formData = ref();
 const rules = reactive({
   name: [{ required: true, message: "請輸入routerName", trigger: "change" }],
-});
-
-const enableTitle = computed(() => {
-  return form.enable ? "啟用" : "停用";
-});
-
-const parentController = computed(() => {
-  if (form.parent && form.parent.trim() !== "") {
-    return 2;
-  } else if (form.parentSelect && form.parentSelect.trim() !== "") {
-    return 1;
-  } else {
-    return 0;
-  }
-});
-
-// do not use same name with ref
-const form = reactive({
-  name: "",
-  path: "",
-  parent: "",
-  parentSelect: "",
-  title: "",
-  enable: false,
-  type: "",
 });
 
 const emit = defineEmits(["submitFormData", "handleDialog"]);
@@ -143,9 +120,6 @@ const onSubmit = async () => {
   });
   if (isValid) {
     // 回傳父元件打API送出
-    if(form.parentSelect && form.parentSelect.trim() !== ""){
-      form.parent = form.parentSelect;
-    }
     emit("submitFormData", form);
     // 清除表單數據
     clear();
@@ -157,21 +131,11 @@ const onSubmit = async () => {
 const clear = () => {
   // 清除校驗
   formData.value.resetFields();
-  console.log(props.controller.isEdit);
-  if (!props.controller.isEdit) {
-    form.name = "";
-  }
-  form.path = "";
-  form.parent = "";
-  form.parentSelect = "";
-  form.title = "";
-  form.enable = false;
-  form.type = "";
 };
 
 // 關閉dialog
 const closeDialog = () => {
-  emit("handleDialog", false, false);
+  emit("handleDialog", false);
   clear();
 };
 // 對外暴露子組件

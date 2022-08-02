@@ -164,7 +164,6 @@ const onSubmit = async () => {
 const clear = () => {
   // 清除校驗
   formData.value.resetFields();
-  console.log(props.controller.isEdit);
   if (!props.controller.isEdit) {
     form.name = "";
   }
@@ -181,6 +180,7 @@ const closeDialog = () => {
   emit("handleDialog", false, false);
   clear();
 };
+
 // 對外暴露子組件
 defineExpose({ clear });
 </script>

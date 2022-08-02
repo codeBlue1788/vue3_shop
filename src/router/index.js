@@ -56,14 +56,11 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
-    console.log("beforeEach");
-    console.log("beforeEach");
     Loading();
 });
 
 
 router.afterEach((to, from) => {
-    console.log("afterEach");
     setTimeout(() => {
         Loading().close();
     }, 200);

@@ -1,9 +1,13 @@
 <template>
   <div style="width: 100%; height: 100%">
-   <el-button type="primary">隨機生成午餐</el-button>
+    <el-button type="primary" @click="openDialog">新增午餐選項</el-button>
     <el-calendar>
       <template #dateCell="{ data }">
-        <div class="calendar-item" style="width: 100%; height: 100%" @click="test(data.day)">
+        <div
+          class="calendar-item"
+          style="width: 100%; height: 100%"
+          @click="checkDate(data.day)"
+        >
           <div class="calendar-time">
             {{ data.day.split("-").slice(2).join("") }}
           </div>
@@ -20,14 +24,22 @@
       </template>
     </el-calendar>
   </div>
+  <lunch-dialog :controller="controller" @handleDialog="handleDialog" />
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { get, set } from "lodash";
+import { reactive, ref } from "vue";
+import LunchDialog from "@/views/LunchDialog.vue";
+
+let controller = reactive({ isOpen:false });
+const openDialog = ()=>{
+  controller.isOpen = true;
+}
 
 const resDate = reactive([
   { date: "2022-07-30", content: "自助餐" },
-  { date: "2022-07-02", content: "涼麵" },
+  { date: "2022-08-02", content: "涼麵" },
   { date: "2022-07-02", content: "早餐店" },
   { date: "2022-07-24", content: "便當" },
   { date: "2022-07-25", content: "拉麵" },
@@ -46,10 +58,13 @@ const dealMyDate = (v) => {
   return res;
 };
 
-function test(val) {
-  console.log("OK",val);
-  const data = resDate.find(e => e.date == val);
+function checkDate(val) {
+  const data = resDate.find((e) => e.date == val);
   console.log(data.content);
+}
+
+function handleDialog(isOpen){
+  controller.isOpen = isOpen
 }
 </script>
 
