@@ -3,7 +3,7 @@
    <el-button type="primary">隨機生成午餐</el-button>
     <el-calendar>
       <template #dateCell="{ data }">
-        <div class="calendar-item" style="width: 100%; height: 100%" @click="test(data)">
+        <div class="calendar-item" style="width: 100%; height: 100%" @click="test(data.day)">
           <div class="calendar-time">
             {{ data.day.split("-").slice(2).join("") }}
           </div>
@@ -48,6 +48,8 @@ const dealMyDate = (v) => {
 
 function test(val) {
   console.log("OK",val);
+  const data = resDate.find(e => e.date == val);
+  console.log(data.content);
 }
 </script>
 
