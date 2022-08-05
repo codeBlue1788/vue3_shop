@@ -2,8 +2,11 @@
   <el-table
     ref="pageTable"
     :data="tableData.datas"
-    style="width: 100%"
+    :style="tableBase.tableControl.style"
+    :stripe="tableBase.tableControl.stripe"
+    :highlight-current-row="tableBase.tableControl.highlightCurrentRow"
     @sort-change="handleSortChange"
+    @row-click="handleRowClick"
   >
     <el-table-column
       v-for="(column, index) in tableBase.columns"
@@ -11,13 +14,16 @@
       :label="column.label"
       :prop="column.prop"
       :width="column.width"
+      :sortable="column.sortable"
       :show-overflow-tooltip="
         column.showOverflowTooltip != null ? column.showOverflowTooltip : false
       "
-      @row-click="handleRowClick"
     >
       <template #default="scope">
-        <span>{{ scope.row[column.prop] }}</span>
+        <span v-if="column.render">{{
+          column.render(scope.row[column.prop])
+        }}</span>
+        <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
     </el-table-column>
     <el-table-column align="right">
@@ -34,6 +40,7 @@
           :key="index"
           :size="btn.size"
           :type="btn.type"
+          :disabled="btn.disabled ? btn.disabled(scope.row) : false"
           @click.stop="btn.onClick(scope.row)"
           >{{ btn.name }}</el-button
         >
@@ -42,6 +49,7 @@
   </el-table>
   <el-col style="text-align: center">
     <el-pagination
+      v-model:currentPage="currentPageVal"
       :page-size="pageSize"
       :pager-count="pagerCount"
       :total="tableData.total"
@@ -55,20 +63,26 @@
 
 <script setup>
 import { computed, reactive, ref, onMounted } from "vue";
+import { userStore } from "@/store/userStore";
+import { storeToRefs } from "pinia";
+
 import qs from "qs";
 
-// defineProp
+// defineProp 接收tableBase
 const props = defineProps({
   tableBase: {
     type: Object,
     required: true,
   },
 });
-console.log(props.tableBase);
+
+//
 const tableData = reactive({
   total: 0,
   datas: [],
 });
+
+// 初始化PageTable
 onMounted(async () => {
   const result = await getData(
     props.tableBase.api,
@@ -93,14 +107,21 @@ const handleRowClick = (row, column, event) => {
 };
 
 // EL-Pagination
-const pagerCount = 5;
-const pageSize = 5;
+/**
+ * 從store取得
+ */
+const store = userStore();
+const { userPrefer } = storeToRefs(store);
+
+const currentPageVal = ref(1);
+const pagerCount = userPrefer.value.pagerCount;
+const pageSize = userPrefer.value.pageSize;
 const handleCurrentChange = async (currentPage) => {
   const result = await getData(
-    tableBase.api,
+    props.tableBase.api,
     currentPage,
     pageSize,
-    searchModel
+    props.tableBase.searchModel
   );
   resetTableData(result);
 };
@@ -166,6 +187,21 @@ const resetTableData = (result) => {
   });
   tableData.total = result.total;
 };
+
+const searchTable = async (searchModel) => {
+  Object.assign(props.tableBase.searchModel, searchModel);
+  const result = await getData(
+    props.tableBase.api,
+    1,
+    pageSize,
+    props.tableBase.searchModel
+  );
+  resetTableData(result);
+  currentPageVal.value = 1;
+};
+
+// 對外暴露父元件可以直接調用PageTable的方法
+defineExpose({ searchTable });
 </script>
 
 <style scoped>

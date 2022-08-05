@@ -3,6 +3,7 @@ import { useRouter, useRoute } from "vue-router";
 import { userStore } from "@/store/userStore";
 import { storeToRefs } from "pinia";
 import loginAPI from "@/api/loginAPI";
+import sysParamAPI from "@/api/sysParamAPI";
 
 export default function (param) {
 
@@ -30,7 +31,7 @@ export default function (param) {
 
     form.onSubmit = async () => {
         const result = await loginAPI.getUserPost(form);
-        console.log(result);
+        const params = await sysParamAPI.getSysParam();
         if (result && result.success) {
             form.username = result.restData.username;
             form.sex = result.restData.sex;
@@ -45,6 +46,17 @@ export default function (param) {
 
             // 存入pinia
             store.updateUserInfo(result.restData);
+            if (params && params.success) {
+                let userPrefer = {
+                    pagerCount:0,
+                    pageSize:0
+                }
+                params.restData.forEach(p=>{
+                    userPrefer[p.code] = parseInt(p.codeValue);
+                });
+                store.updateUserPrefer(userPrefer);
+            }
+
 
             router.push({
                 name: "Index",

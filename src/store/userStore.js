@@ -10,6 +10,10 @@ export const userStore = defineStore('user', {
                 sex: "",
                 email: "",
                 createDate: ""
+            },
+            userPrefer:{
+                pagerCount:5,
+                pageSize:10
             }
         }
     },
@@ -19,6 +23,9 @@ export const userStore = defineStore('user', {
     actions:{
         updateUserInfo(userBO){
             Object.assign(this.user,userBO);
+        },
+        updateUserPrefer(userPrefer){
+            Object.assign(this.userPrefer,userPrefer);
         }
     },
     persist:{

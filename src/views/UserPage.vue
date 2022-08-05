@@ -3,12 +3,12 @@
     <el-row>
       <el-col :span="6">
         <el-form-item label="使用者ID" prop="id">
-          <el-input v-model="form.id" />
+          <el-input v-model="form.id" clearable />
         </el-form-item>
       </el-col>
       <el-col :span="6">
         <el-form-item label="使用者姓名" prop="username">
-          <el-input v-model="form.username" />
+          <el-input v-model="form.username" clearable />
         </el-form-item>
       </el-col>
       <el-col :span="6">
@@ -24,7 +24,11 @@
       </el-col>
     </el-row>
   </el-form>
-  <PageTable ref="pageTable" :tableBase="tableBase" />
+  <PageTable
+    ref="pageTableRef"
+    :tableBase="tableBase"
+    @row-click="handleRowClick"
+  />
 </template>
 
 <script setup>
@@ -34,124 +38,92 @@ import qs from "qs";
 import TableBase from "@/views/TableBase";
 import PageTable from "@/views/PageTable.vue";
 
-const btns = [
-  {
-    type: "primary",
-    width: "10px",
-    name:"編輯",
-    onClick: (row) => {
-      console.log(row);
-    },
-  },
-];
-
-const tableBase = new TableBase(
-  userAPI.queryUserPage,
-  [],
-  btns,
-  {},
-  { stripe: false }
-);
-
 const form = reactive({
   id: "",
   name: "",
   sex: "",
 });
-const searchUser = () => {};
-// const seachUser = async () => {
-//   const conditions = addAllCondition(form);
-//   const result = await getData(userAPI.queryUserPage, 1, pageSize, form);
-//   resetTableData(result);
-// };
 
-// onMounted(async () => {
-//   const result = await getData(userAPI.queryUserPage, 1, pageSize, form);
-//   resetTableData(result);
-// });
+const pageTableRef = ref();
 
-// const handleEdit = (index, row) => {
-//   console.log(index, row);
-// };
-// const handleDelete = (index, row) => {
-//   console.log(index, row);
-// };
+// 傳入子元件的函式內只能調用父元件的方法
+// 若要調用子元件內的方法要用ref.value的方式調用
+const btns = [
+  {
+    type: "primary",
+    name: "編輯",
+    onClick: (row) => {
+      console.log(row);
+      test();
+    },
+  },
+  {
+    type: "danger",
+    name: "刪除",
+    onClick: (row) => {
+      console.log(row);
+    },
+    disabled: (val) => (val.sex == "Female" ? true : false),
+  },
+];
 
-// const tableData = reactive({
-//   total: 0,
-//   datas: [],
-// });
-// const pageSize = 5;
-// const handleCurrentChange = async (currentPage) => {
-//   const result = await getData(
-//     userAPI.queryUserPage,
-//     currentPage,
-//     pageSize,
-//     form
-//   );
-//   resetTableData(result);
-// };
+function test() {
+  console.log("我被調用了");
+}
 
-// const resetTableData = (result) => {
-//   tableData.datas.splice(0);
-//   result.data.forEach((e) => {
-//     tableData.datas.push(e);
-//   });
-//   tableData.total = result.total;
-// };
+const handleRowClick = (val) => {
+  console.log("父元件收到了", val);
+};
 
-// const getData = async (api, page, pageSize, model, sort) => {
-//   const conditions = addAllCondition(model);
-//   const queryObject = getQueryObject(page, pageSize, conditions, sort);
-//   const queryString = parseQueryString(queryObject);
-//   const result = await api(queryString);
-//   return parseResult(result);
-// };
+const columns = [
+  {
+    label: "使用者ID",
+    prop: "id",
+    width: "200px",
+    sortable: true,
+  },
+  {
+    label: "使用者密碼",
+    prop: "password",
+    width: "200px",
+    sortable: true,
+  },
+  {
+    label: "使用者姓名",
+    prop: "username",
+    width: "200px",
+    sortable: true,
+  },
+  {
+    label: "性別",
+    prop: "sex",
+    width: "200px",
+    sortable: true,
+    render: (val) => {
+      if (val && val == "male") {
+        return "男";
+      }
+      if (val && val == "Female") {
+        return "女";
+      }
+      return val;
+    },
+  },
+  {
+    label: "email",
+    prop: "email",
+    width: "200px",
+    sortable: true,
+  },
+];
 
-// const addAllCondition = (model) => {
-//   const conditions = [];
-//   const keys = Object.keys(model);
-//   keys.forEach((key) => {
-//     let value = null;
-//     if (model[key] instanceof Date) {
-//       value = moment(model[key]).format("YYYY-MM-DD HH:mm:ss.SSS");
-//     } else {
-//       value = model[key];
-//     }
+const tableBase = new TableBase(userAPI.queryUserPage, columns, btns, form, {
+  stripe: false,
+});
 
-//     if (key != null && value != null) {
-//       conditions.push({ key, value });
-//     }
-//   });
-//   return conditions;
-// };
-
-// const parseQueryString = (queryObject) => {
-//   const qStr = qs.stringify(queryObject, { encodeValuesOnly: true });
-//   return qStr.replace(/\[[0-9*]\]/g, "");
-// };
-
-// const parseResult = (result) => {
-//   return {
-//     data: result.restData.content,
-//     total: result.restData.totalElements,
-//   };
-// };
-
-// const getQueryObject = (currentPage, size, conditions, sort) => {
-//   const queryObject = {
-//     page: currentPage - 1,
-//     size,
-//   };
-//   conditions.forEach((condition) => {
-//     queryObject[condition.key] = condition.value;
-//   });
-//   if (sort != null) {
-//     const direction = sort.order === "descending" ? "DESC" : "ASC";
-//     queryObject.sort = `${sort.prop},${direction}`;
-//   }
-//   return queryObject;
-// };
+const searchUser = () => {
+  pageTableRef.value.searchTable(form);
+};
 </script>
 
 <style scoped>
