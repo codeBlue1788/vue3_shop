@@ -1,6 +1,5 @@
 import { reactive, getCurrentInstance, toRefs } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import axios from "axios";
 import { userStore } from "@/store/userStore";
 import { storeToRefs } from "pinia";
 import loginAPI from "@/api/loginAPI";

@@ -7,6 +7,8 @@ import Table from '@/views/Table.vue'
 import User from '@/views/User.vue'
 import MenuManage from '@/views/MenuManage.vue'
 import Lunch from '@/views/Lunch.vue'
+import UserPage from '@/views/UserPage.vue'
+
 import { Loading } from '@/utils/loading'
 
 
@@ -39,6 +41,11 @@ const routes = [
                 path: "/lunch",
                 name: "Lunch",
                 component: Lunch
+            },
+            {
+                path: "/userPage",
+                name: "UserPage",
+                component: UserPage
             }
         ]
     },
