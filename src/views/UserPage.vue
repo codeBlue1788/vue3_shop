@@ -2,12 +2,12 @@
   <el-form ref="search" :model="form" label-position="right">
     <el-row>
       <el-col :span="6">
-        <el-form-item label="使用者ID" prop="id">
+        <el-form-item :label="$t('user.userId')" prop="id">
           <el-input v-model="form.id" clearable />
         </el-form-item>
       </el-col>
       <el-col :span="6">
-        <el-form-item label="使用者姓名" prop="username">
+        <el-form-item :label="$t('user.userName')" prop="username">
           <el-input v-model="form.username" clearable />
         </el-form-item>
       </el-col>
@@ -23,12 +23,51 @@
         <el-button type="primary" @click="searchUser">Search</el-button>
       </el-col>
     </el-row>
+    <el-row>
+      <el-col :span="6">
+        <el-upload
+          v-model:file-list="fileList"
+          class="upload-demo"
+          action=""
+          multiple
+          :http-request="handlePreview"
+          :limit="3"
+          :on-exceed="handleExceed"
+        >
+          <el-button type="primary">Click to upload</el-button>
+          <template #tip>
+            <div class="el-upload__tip">
+              jpg/png files with a size less than 500KB.
+            </div>
+          </template>
+        </el-upload>
+      </el-col>
+    </el-row>
   </el-form>
   <PageTable
     ref="pageTableRef"
     :tableBase="tableBase"
     @row-click="handleRowClick"
   />
+  <FormDialog ref="formDialog" :dialogHandler="dialogHandler">
+    <template #content>
+      <el-form ref="formData" :model="formModel" label-position="top">
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="名稱" prop="name">
+              <el-input v-model="formModel.name" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </template>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="submit">送出</el-button>
+        <el-button @click="closeDialog">關閉</el-button>
+      </span>
+    </template>
+  </FormDialog>
 </template>
 
 <script setup>
@@ -37,11 +76,37 @@ import userAPI from "@/api/userAPI";
 import qs from "qs";
 import TableBase from "@/views/TableBase";
 import PageTable from "@/views/PageTable.vue";
+import FormDialog from "@/views/FormDialog.vue";
+import FileUtils from "@/utils/FileUtils";
+import * as XLSX from "xlsx";
+
+const dialogHandler = reactive({
+  title: "This is Test",
+  switchDialog: false,
+});
+
+const fileList = reactive([]);
+const handlePreview = async (file) => {
+  // 解析檔案內容
+  const getFile = await FileUtils.getArrayBufferData(file.file);
+  // 將檔案轉換成可閱讀的格式
+  const workbook = XLSX.read(getFile.fileData, {
+    type: "array",
+  });
+  const sheetname = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetname];
+  const rowData = XLSX.utils.sheet_to_json(sheet);
+};
+const handleExceed = () => {};
 
 const form = reactive({
   id: "",
   name: "",
   sex: "",
+});
+
+const formModel = reactive({
+  name: "",
 });
 
 const pageTableRef = ref();
@@ -54,7 +119,7 @@ const btns = [
     name: "編輯",
     onClick: (row) => {
       console.log(row);
-      test();
+      openDialog(row);
     },
   },
   {
@@ -67,8 +132,9 @@ const btns = [
   },
 ];
 
-function test() {
-  console.log("我被調用了");
+function openDialog(row) {
+  console.log(row);
+  dialogHandler.switchDialog = true;
 }
 
 const handleRowClick = (val) => {
@@ -123,6 +189,12 @@ const tableBase = new TableBase(userAPI.queryUserPage, columns, btns, form, {
 
 const searchUser = () => {
   pageTableRef.value.searchTable(form);
+};
+
+const submit = () => {};
+const closeDialog = () => {
+  console.log(formModel.name);
+  dialogHandler.switchDialog = false;
 };
 </script>
 

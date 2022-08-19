@@ -142,15 +142,10 @@ const emit = defineEmits(["submitFormData", "handleDialog"]);
 
 const onSubmit = async () => {
   //驗證
-  let isValid = false;
-  await formData.value.validate((valid) => {
-    if (valid) {
-      isValid = true;
-    }
-  });
+  const isValid = await formData.value.validate((valid) => valid);
   if (isValid) {
     // 回傳父元件打API送出
-    if(form.parentSelect && form.parentSelect.trim() !== ""){
+    if (form.parentSelect && form.parentSelect.trim() !== "") {
       form.parent = form.parentSelect;
     }
     emit("submitFormData", form);

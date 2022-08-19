@@ -17,16 +17,6 @@ export default function (param) {
         sex: ""
     });
 
-    // form.onSubmit = ()=>{
-    //     proxy.$http.get(`/api/login/test`,{params:form})
-    //     .then(res => {
-    //         console.log(res);
-    //     })
-    //     .catch(err => {
-    //         console.log(err);
-    //     })
-    // }
-
     const router = useRouter();
 
     form.onSubmit = async () => {

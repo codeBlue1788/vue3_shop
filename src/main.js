@@ -13,6 +13,9 @@ import { Loading } from './utils/loading'
 
 import httpService from '@/service/httpService'
 
+// i18n 
+import i18n from './locales/index'
+
 const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPluginPersist);
@@ -25,6 +28,9 @@ app.use(ElementPlus);
 
 //使用pinia
 app.use(pinia);
+
+// 使用i18n
+app.use(i18n);
 
 // 註冊全局icon
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
